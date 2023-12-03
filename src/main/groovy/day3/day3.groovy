@@ -1,5 +1,8 @@
 package day3
 
+import groovy.transform.EqualsAndHashCode
+import groovy.transform.ToString
+
 def inputFile = new File("../../resources/day3/input")
 
 //part 1
@@ -8,6 +11,8 @@ inputFile.readLines().each {
     matrix << it.split("")
 }
 
+@ToString
+@EqualsAndHashCode
 class Coordinate {
     int x, y
 
@@ -63,4 +68,57 @@ def neighbours(int i, int j) {
         }
     }
     neighbours
+}
+
+// part2
+
+Map<Coordinate, List<Integer>> gears = [:].withDefault { [] }
+
+for (i in 0..<matrix.size()) {
+    def number = ""
+    def numberCoordinates = []
+    for (j in 0..<matrix[i].size()) {
+
+        if (matrix[i][j].isNumber()) {
+            number += matrix[i][j]
+            numberCoordinates << new Coordinate(i, j)
+        }
+
+        if (!matrix[i][j].isNumber() || number != "" && j == matrix[i].size() - 1) {
+            for (coordinate in numberCoordinates) {
+                for (neighbour in neighboursWithCoordinates(coordinate.x, coordinate.y)) {
+                    if (neighbour.key == "*") {
+                        def intNumber = number as int
+                        if (!gears[neighbour.value].contains(intNumber)) {
+                            //a number maybe added to coordinates of different gears
+                            gears[neighbour.value] << (number as int)
+                        }
+                    }
+                }
+            }
+            number = ""
+            numberCoordinates = []
+        }
+    }
+}
+
+def neighboursWithCoordinates(int i, int j) {
+    Map<String, Coordinate> neighbours = [:]
+    directions.each { direction ->
+        neighbourX = i + direction.x
+        neighbourY = j + direction.y
+        if (neighbourX >= 0 && neighbourX < matrix.size() && neighbourY >= 0 && neighbourY < matrix[i].size()) {
+
+            neighbours[matrix[neighbourX][neighbourY]] = new Coordinate(neighbourX, neighbourY)
+        }
+    }
+    neighbours
+}
+
+println gears.findAll {
+    it.value.size() == 2
+}.collect {
+    it.value
+}.sum {
+    it.inject(1) {acc, number -> acc * (number as int)}
 }
