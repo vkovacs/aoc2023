@@ -33,11 +33,53 @@ inputFile.readLines().each { line ->
     }
 }
 
-def chainedMappingResults = [:]
+def part1(def seeds, def maps) {
+    def chainedMappingResults = [:]
 
-seed = [3943078016]
+    for (seed in seeds) {
+        def chainedMappedValue = seed
+        for (key in maps.keySet()) {
+            mappedValue = null
+            for (mapping in (maps[key])) {
+                def mappingResult = mapping.mappingFor(chainedMappedValue)
+                if (mappingResult != null) {
+                    mappedValue = mappingResult
+                    break
+                }
+            }
+            if (mappedValue == null) {
+                mappedValue = chainedMappedValue
+            }
+            chainedMappedValue = mappedValue
 
-for (seed in seeds) {
+        }
+        chainedMappingResults.put(seed, chainedMappedValue)
+        //println(chainedMappingResults)
+    }
+    chainedMappingResults
+}
+
+
+//part1
+println part1(seeds, maps).values().min()
+
+//part2
+minLocation = Long.MAX_VALUE
+for (int i = 0; i < seeds.size(); i = i + 2) {
+    println("i: " + i)
+    for (j in 0..<seeds[i + 1]) {
+        long seed = seeds[i] + j
+        if (seed % 10_000_000 == 0) println seed
+        def location = part2(seed, maps)
+        if (location < minLocation) {
+            minLocation = location
+        }
+    }
+}
+
+println minLocation
+
+def part2(def seed, def maps) {
     def chainedMappedValue = seed
     for (key in maps.keySet()) {
         mappedValue = null
@@ -54,13 +96,8 @@ for (seed in seeds) {
         chainedMappedValue = mappedValue
 
     }
-    chainedMappingResults.put(seed, chainedMappedValue)
-    println(chainedMappingResults)
+    chainedMappedValue
 }
-
-println(chainedMappingResults)
-
-println chainedMappingResults.values().min()
 
 class Mapping {
     long sourceRangeStart
@@ -75,7 +112,6 @@ class Mapping {
 
     Long mappingFor(long number) {
         if (sourceRangeStart <= number && number < sourceRangeStart + range) {
-            //if (number in sourceRangeStart..<sourceRangeStart + range) {
             def difference = number - sourceRangeStart
             return destinationRangeStart + difference
         }
