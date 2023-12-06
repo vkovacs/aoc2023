@@ -9,13 +9,12 @@ def distances = lines[1].split(":")[1].replaceAll(/ +/, " ").trim().split(" ").c
 
 def successCounts = []
 
-for (i in 0..<times.size()) {
-    def halfHoldTime = (times[i] / 2) as double
-    def halfHoldTimeCeil = Math.ceil(halfHoldTime) as int
+int successCount(long time, long distance) {
+    def halfHoldTime = (time / 2) as double
+    def halfHoldTimeCeil = Math.ceil(halfHoldTime) as long
     def range = 0
-    if (travelledDistance(times[i], halfHoldTimeCeil) <= distances[i]) return
 
-    while (distances[i] < travelledDistance(times[i], halfHoldTimeCeil + range)) {
+    while (distance < travelledDistance(time, halfHoldTimeCeil + range)) {
         range++
     }
 
@@ -24,12 +23,21 @@ for (i in 0..<times.size()) {
         successCount = --successCount //middle element does not count twice
     }
 
-    successCounts << successCount
+    successCount
 }
 
+//part1
+for (i in 0..<times.size()) {
+    successCounts << successCount(times[i], distances[i])
+}
 println successCounts
 println successCounts.inject(1) {acc, it -> acc * it}
 
-int travelledDistance(int maxTime, int holdTime) {
+//part2
+def longRaceTime = lines[0].split(":")[1].replaceAll(/ +/, "").trim() as long
+def longRaceDistance = lines[1].split(":")[1].replaceAll(/ +/, "").trim() as long
+println successCount(longRaceTime, longRaceDistance)
+
+def travelledDistance(def maxTime, def holdTime) {
     (maxTime - holdTime) * holdTime
 }
